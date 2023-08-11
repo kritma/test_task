@@ -6,7 +6,11 @@ export const users = express.Router()
 
 users.get('/:id', async (req, res, next) => {
     try {
-        const task = { task: "get_user", data: { id: req.params.id } }
+        if (isNaN(req.params.id)) {
+            res.status(400).json({ error: "id must be a number" })
+            return
+        }
+        const task = { task: "get_user", data: { id: +req.params.id } }
         const data = await processTask(task)
         res.json({ data });
     } catch (error) {

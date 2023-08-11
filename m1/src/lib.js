@@ -2,21 +2,22 @@ import { connect } from 'amqplib';
 import { randomUUID } from 'crypto';
 import EventEmitter from 'events';
 
-const RABBITMQ_URL = process.env.RABBITMQ ?? 'amqp://localhost';
-const TASK_QUEUE = process.env.TASK_QUEUE ?? 'tasks';
-const RESPONSE_QUEUE = process.env.RESPONSE_QUEUE ?? 'results';
+const RABBITMQ = `amqp://${process.env.RABBITMQ ?? 'localhost'}`
+const TASK_QUEUE = process.env.TASK_QUEUE ?? 'tasks'
+const RESPONSE_QUEUE = process.env.RESPONSE_QUEUE ?? 'results'
 
 export const messages = new EventEmitter()
 
 async function setupRabbitMQ() {
-    const connection = await connect(RABBITMQ_URL);
-    const channel = await connection.createChannel();
-    await channel.assertQueue(TASK_QUEUE, { durable: true });
-    await channel.assertQueue(RESPONSE_QUEUE, { durable: true });
+    const connection = await connect(RABBITMQ)
+    const channel = await connection.createChannel()
+    await channel.assertQueue(TASK_QUEUE, { durable: true })
+    await channel.assertQueue(RESPONSE_QUEUE, { durable: true })
+    // channel.prefetch(1)
     channel.consume(RESPONSE_QUEUE, (msg) => {
         messages.emit("received", msg)
     })
-    return channel;
+    return channel
 }
 
 const channel = await setupRabbitMQ()
@@ -30,14 +31,12 @@ export async function processTask(task) {
     });
 
     return new Promise((resolve, reject) => {
-        function received_handler(msg) {
+        const received_handler = (msg) => {
             if (msg.properties.correlationId == correlationId) {
                 channel.ack(msg)
                 messages.removeListener("received", received_handler)
                 const obj = JSON.parse(msg.content.toString())
                 resolve(obj)
-            } else {
-                channel.nack(msg)
             }
         }
         messages.addListener("received", received_handler)
