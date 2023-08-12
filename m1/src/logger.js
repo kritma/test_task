@@ -1,5 +1,5 @@
 import winston from "winston"
-import { messages } from "./lib.js";
+import { responses } from "./lib.js";
 
 export const logger = winston.createLogger()
 
@@ -13,8 +13,8 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 }
 
-function log_rabitmq(msq) {
-    logger.info(`received message ${msq.content.toString()}`)
+function responses_logging(msq) {
+    logger.info(`received response ${msq.content.toString()}`)
 }
 
-messages.addListener("received", log_rabitmq)
+responses.addListener("received", responses_logging)

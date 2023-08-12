@@ -6,7 +6,7 @@ const RABBITMQ = `amqp://${process.env.RABBITMQ ?? 'localhost'}`
 const TASK_QUEUE = process.env.TASK_QUEUE ?? 'tasks'
 const RESPONSE_QUEUE = process.env.RESPONSE_QUEUE ?? 'results'
 
-export const messages = new EventEmitter()
+export const responses = new EventEmitter()
 
 async function setupRabbitMQ() {
     const connection = await connect(RABBITMQ)
@@ -15,7 +15,7 @@ async function setupRabbitMQ() {
     await channel.assertQueue(RESPONSE_QUEUE, { durable: true })
     channel.prefetch(1)
     channel.consume(RESPONSE_QUEUE, (msg) => {
-        messages.emit("received", msg)
+        responses.emit("received", msg)
     })
     return channel
 }
@@ -34,11 +34,11 @@ export async function processTask(task) {
         const received_handler = (msg) => {
             if (msg.properties.correlationId == correlationId) {
                 channel.ack(msg)
-                messages.removeListener("received", received_handler)
+                responses.removeListener("received", received_handler)
                 const obj = JSON.parse(msg.content.toString())
                 resolve(obj)
             }
         }
-        messages.addListener("received", received_handler)
+        responses.addListener("received", received_handler)
     })
 }
