@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.10.3",
+    "nerdamer": "^1.1.13",
     "winston": "^3.10.0"
   }
 }

@@ -13,7 +13,7 @@ async function setupRabbitMQ() {
     const channel = await connection.createChannel()
     await channel.assertQueue(TASK_QUEUE, { durable: true })
     await channel.assertQueue(RESPONSE_QUEUE, { durable: true })
-    // channel.prefetch(1)
+    channel.prefetch(1)
     channel.consume(RESPONSE_QUEUE, (msg) => {
         messages.emit("received", msg)
     })

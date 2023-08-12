@@ -1,17 +1,11 @@
+import { performCalcTask } from "./calc_task.js";
 import { handleTasks } from "./lib.js";
 
-function sleep(time) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => resolve(), time)
-    })
-}
-
 async function taskHandler(task) {
-    if (task.task == "get_user") {
-        await sleep(task.data.id * 100)
-        return { id: task.data.id }
+    if (task.type == "calc_equation") {
+        return performCalcTask(task)
     }
-    return { result: "done" }
+    return { error: "no such task" }
 }
 
 handleTasks(taskHandler)
