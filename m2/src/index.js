@@ -5,7 +5,7 @@ async function taskHandler(task) {
     if (task.type == "calc_equation") {
         return performCalcTask(task)
     }
-    return { error: "no such task" }
+    return { error: { message: "no such task" } }
 }
 
 handleTasks(taskHandler)
